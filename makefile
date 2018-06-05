@@ -8,6 +8,7 @@ GOARCH = amd64
 
 travis:
 	GOPATH="$(GOPATH)" GOOS="$(GOOS)" GOARCH="$(GOARCH)"
+	go get -u golang.org/x/crypto/curve25519
 	go test "./..."
 
 fmt:
