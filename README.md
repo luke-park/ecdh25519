@@ -1,6 +1,7 @@
 ![](icon.png)
 
 <a href="https://godoc.org/github.com/luke-park/ecdh25519"><img src="https://godoc.org/github.com/luke-park/ecdh25519?status.svg" alt="GoDoc"></a>
+<a href="https://travis-ci.org/luke-park/ecdh25519"><img src="https://travis-ci.org/luke-park/ecdh25519.svg?branch=master" /></a>
 
 # ecdh25519
 A simple to use implementation of ECDH with curve25519 for Go.  The core

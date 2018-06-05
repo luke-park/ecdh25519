@@ -5,17 +5,17 @@
 package ecdh25519
 
 import (
-    "crypto/rand"
-    "errors"
+	"crypto/rand"
+	"errors"
 
-    "golang.org/x/crypto/curve25519"
+	"golang.org/x/crypto/curve25519"
 )
 
 // PrivateKey represents the private portion of a curve25519 ECDH key pair.
 type PrivateKey struct {
-    rprv [KeySize]byte
-    rpub *PublicKey
-    publicHasBeenComputed bool
+	rprv                  [KeySize]byte
+	rpub                  *PublicKey
+	publicHasBeenComputed bool
 }
 
 // PublicKey represents the public portion of a curve25519 ECHD key pair.
@@ -31,79 +31,81 @@ var KeySizeError error = errors.New("The data provided was not 32 bytes in lengt
 // GenerateKey generates a new curve25519 private key.  The public portion can
 // be retrieved by calling Public().
 func GenerateKey() (*PrivateKey, error) {
-    var k [KeySize]byte
-    _, err := rand.Read(k[:])
-    if err != nil { return nil, err }
+	var k [KeySize]byte
+	_, err := rand.Read(k[:])
+	if err != nil {
+		return nil, err
+	}
 
-    k[0] &= 248
-    k[31] &= 127
-    k[31] |= 64
+	k[0] &= 248
+	k[31] &= 127
+	k[31] |= 64
 
-    return &PrivateKey{k, nil, false}, nil
+	return &PrivateKey{k, nil, false}, nil
 }
 
 // Public returns the public key corresponding to prv.
 func (prv *PrivateKey) Public() *PublicKey {
-    if prv.publicHasBeenComputed {
-        return prv.rpub
-    }
+	if prv.publicHasBeenComputed {
+		return prv.rpub
+	}
 
-    var dst [KeySize]byte
-    curve25519.ScalarBaseMult(&dst, &prv.rprv)
+	var dst [KeySize]byte
+	curve25519.ScalarBaseMult(&dst, &prv.rprv)
 
-    rpub := PublicKey(dst)
-    prv.rpub = &rpub
-    return prv.rpub
+	rpub := PublicKey(dst)
+	prv.rpub = &rpub
+	return prv.rpub
 }
 
 // ComputeSecret computes the shared secret value for the calling private key
 // when combined with the given public key.
 func (prv *PrivateKey) ComputeSecret(pub *PublicKey) []byte {
-    rpub := [KeySize]byte(*pub)
+	rpub := [KeySize]byte(*pub)
 
-    var dst [KeySize]byte
-    curve25519.ScalarMult(&dst, &prv.rprv, &rpub)
+	var dst [KeySize]byte
+	curve25519.ScalarMult(&dst, &prv.rprv, &rpub)
 
-    return dst[:]
+	return dst[:]
 }
 
 // PrivateFromBytes creates a PrivateKey from the given input byte slice.
 func PrivateFromBytes(raw []byte) (*PrivateKey, error) {
-    if len(raw) != KeySize {
-        return nil, KeySizeError
-    }
+	if len(raw) != KeySize {
+		return nil, KeySizeError
+	}
 
-    var arr [KeySize]byte
-    copy(arr[:], raw)
+	var arr [KeySize]byte
+	copy(arr[:], raw)
 
-    return &PrivateKey{arr, nil, false}, nil
+	return &PrivateKey{arr, nil, false}, nil
 }
 
 // PublicFromBytes creates a PublicKey from the given input byte slice.
 func PublicFromBytes(raw []byte) (*PublicKey, error) {
-    if len(raw) != KeySize {
-        return nil, KeySizeError
-    }
+	if len(raw) != KeySize {
+		return nil, KeySizeError
+	}
 
-    var arr [KeySize]byte
-    copy(arr[:], raw)
+	var arr [KeySize]byte
+	copy(arr[:], raw)
 
-    rpub := PublicKey(arr)
-    return &rpub, nil
+	rpub := PublicKey(arr)
+	return &rpub, nil
 }
 
 // ToBytes marshals the given Private Key to a byte slice.  It can be loaded
 // back into a PrivateKey by using PrivateFromBytes.
 func (prv *PrivateKey) ToBytes() []byte {
-    r := make([]byte, KeySize)
-    copy(r, prv.rprv[:])
-    return r
+	r := make([]byte, KeySize)
+	copy(r, prv.rprv[:])
+	return r
 }
 
 // ToBytes marhsals the given Public Key to a byte slice.  It can be loaded
 // back into a PublicKey by using PublicFromBytes.
 func (pub *PublicKey) ToBytes() []byte {
-    r := make([]byte, KeySize)
-    copy(r, pub[:])
-    return r
+	r := make([]byte, KeySize)
+	copy(r, pub[:])
+	return r
 }
