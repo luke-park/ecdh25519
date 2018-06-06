@@ -55,6 +55,8 @@ func (prv *PrivateKey) Public() *PublicKey {
 
 	rpub := PublicKey(dst)
 	prv.rpub = &rpub
+	prv.publicHasBeenComputed = true
+	
 	return prv.rpub
 }
 
@@ -70,7 +72,9 @@ func (prv *PrivateKey) ComputeSecret(pub *PublicKey) []byte {
 }
 
 // PrivateFromBytes creates a PrivateKey from the given input byte slice.
-func PrivateFromBytes(raw []byte) (*PrivateKey, error) {
+// If precompute is true, the public key is stored in PrivateKey immediately
+// without having to be computed.
+func PrivateFromBytes(raw []byte, precompute bool) (*PrivateKey, error) {
 	if len(raw) != KeySize {
 		return nil, KeySizeError
 	}
@@ -78,7 +82,12 @@ func PrivateFromBytes(raw []byte) (*PrivateKey, error) {
 	var arr [KeySize]byte
 	copy(arr[:], raw)
 
-	return &PrivateKey{arr, nil, false}, nil
+	prv := &PrivateKey{arr, nil, false}
+	if precompute {
+		prv.Public()
+	}
+
+	return prv, nil
 }
 
 // PublicFromBytes creates a PublicKey from the given input byte slice.

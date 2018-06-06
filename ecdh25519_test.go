@@ -5,6 +5,29 @@ import (
 	"testing"
 )
 
+func TestPrecompute(t *testing.T) {
+	prv1, err := GenerateKey()
+	if err != nil {
+		t.Error(err)
+	}
+
+	raw := prv1.ToBytes()
+
+	prv2, err := PrivateFromBytes(raw, false)
+	if err != nil {
+		t.Error(err)
+	}
+
+	prv3, err := PrivateFromBytes(raw, true)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if prv2.publicHasBeenComputed || !prv3.publicHasBeenComputed {
+		t.Errorf("Public key precomputation failed.\nprv2: %v, prv3: %v", prv2.publicHasBeenComputed, prv3.publicHasBeenComputed)
+	}
+}
+
 func TestComputeSecret(t *testing.T) {
 	prv1, err := GenerateKey()
 	if err != nil {
@@ -39,7 +62,7 @@ func TestMarshal(t *testing.T) {
 	rawprv := prv1.ToBytes()
 	rawpub := pub1.ToBytes()
 
-	prv2, err := PrivateFromBytes(rawprv)
+	prv2, err := PrivateFromBytes(rawprv, false)
 	if err != nil {
 		t.Error(err)
 		return
